@@ -1,43 +1,49 @@
 import { useState, useEffect } from "react";
-import { Brain, Zap, ChevronRight } from "lucide-react";
+import { Brain, Zap, ChevronRight, Loader2, Check } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { Button } from "./ui/button";
-
-const aiMessages = [
-  "Snowflake Cortex Analysis: Increased burn rate detected at East Zone Medical Center. Recommending 15% stock diversion from Hub Alpha to prevent Type O+ shortage on Thursday.",
-  "Pattern Recognition: Seasonal demand surge predicted for Pediatric Amoxicillin across Southern Districts. Initiating preemptive reorder sequence.",
-  "Anomaly Alert: Insulin Glargine consumption at Central Regional Hospital exceeds baseline by 23%. Cross-referencing with patient intake data.",
-  "Optimization Complete: Route efficiency improved by 12% for North-West corridor. Estimated savings: 2.3 hours per supply cycle.",
-];
+import { useLiveSimulation } from "@/hooks/useLiveSimulation";
+import { useToast } from "@/hooks/use-toast";
 
 export const IntelligenceBar = () => {
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const { currentInsight, insightIndex } = useLiveSimulation();
+  const { toast } = useToast();
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   useEffect(() => {
-    const message = aiMessages[currentMessageIndex];
     let charIndex = 0;
     setDisplayedText("");
     setIsTyping(true);
 
     const typeInterval = setInterval(() => {
-      if (charIndex < message.length) {
-        setDisplayedText(message.slice(0, charIndex + 1));
+      if (charIndex < currentInsight.length) {
+        setDisplayedText(currentInsight.slice(0, charIndex + 1));
         charIndex++;
       } else {
         clearInterval(typeInterval);
         setIsTyping(false);
-        
-        // Move to next message after delay
-        setTimeout(() => {
-          setCurrentMessageIndex((prev) => (prev + 1) % aiMessages.length);
-        }, 5000);
       }
     }, 25);
 
     return () => clearInterval(typeInterval);
-  }, [currentMessageIndex]);
+  }, [currentInsight, insightIndex]);
+
+  const handleExecuteReorder = async () => {
+    setIsExecuting(true);
+    
+    // Simulate writing to Snowflake
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setIsExecuting(false);
+    
+    toast({
+      title: "Reorder Logged & Inventory Updated",
+      description: "Successfully written to Snowflake Unistore. Supply chain notified.",
+      duration: 5000,
+    });
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 p-4 animate-fade-up stagger-8">
@@ -56,6 +62,7 @@ export const IntelligenceBar = () => {
             <div className="flex items-center gap-2 mb-1">
               <Zap className="w-3.5 h-3.5 text-emerald" />
               <span className="text-xs font-semibold text-emerald uppercase tracking-wider">Cortex AI Intelligence</span>
+              <span className="text-[10px] text-muted-foreground">• Updates every 15s</span>
             </div>
             <p className="text-sm text-foreground/90 font-mono leading-relaxed">
               {displayedText}
@@ -69,10 +76,21 @@ export const IntelligenceBar = () => {
           <Button 
             variant="default" 
             size="sm" 
-            className="flex-shrink-0 shimmer bg-emerald hover:bg-emerald-glow text-primary-foreground gap-1.5"
+            className="flex-shrink-0 shimmer bg-emerald hover:bg-emerald-glow text-primary-foreground gap-1.5 min-w-[160px]"
+            onClick={handleExecuteReorder}
+            disabled={isExecuting}
           >
-            Execute Reorder
-            <ChevronRight className="w-4 h-4" />
+            {isExecuting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Writing to Snowflake...
+              </>
+            ) : (
+              <>
+                Execute Reorder
+                <ChevronRight className="w-4 h-4" />
+              </>
+            )}
           </Button>
         </div>
       </GlassCard>

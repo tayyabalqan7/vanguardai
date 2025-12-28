@@ -1,75 +1,6 @@
 import { GlassCard } from "./GlassCard";
 import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  location: string;
-  opening: number;
-  received: number;
-  issued: number;
-  closing: number;
-  unit: string;
-  trend: "up" | "down" | "stable";
-}
-
-const inventoryData: InventoryItem[] = [
-  {
-    id: "1",
-    name: "Insulin Glargine",
-    location: "Central Regional Hospital",
-    opening: 200,
-    received: 50,
-    issued: 94,
-    closing: 156,
-    unit: "vials",
-    trend: "down",
-  },
-  {
-    id: "2",
-    name: "Type O+ Blood Units",
-    location: "East Zone Medical Center",
-    opening: 85,
-    received: 20,
-    issued: 67,
-    closing: 38,
-    unit: "units",
-    trend: "down",
-  },
-  {
-    id: "3",
-    name: "Pediatric Amoxicillin",
-    location: "St. Jude's Relief Center",
-    opening: 350,
-    received: 200,
-    issued: 130,
-    closing: 420,
-    unit: "bottles",
-    trend: "up",
-  },
-  {
-    id: "4",
-    name: "Oxygen Cylinders",
-    location: "North-West NGO Hub",
-    opening: 60,
-    received: 25,
-    issued: 37,
-    closing: 48,
-    unit: "cylinders",
-    trend: "down",
-  },
-  {
-    id: "5",
-    name: "N95 Masks (Box)",
-    location: "Metro General Hospital",
-    opening: 2500,
-    received: 1000,
-    issued: 600,
-    closing: 2900,
-    unit: "boxes",
-    trend: "up",
-  },
-];
+import { useLiveSimulation } from "@/hooks/useLiveSimulation";
 
 const getStockStatus = (closing: number, issued: number) => {
   const daysLeft = closing / (issued / 7);
@@ -85,12 +16,22 @@ const TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
 };
 
 export const InventoryTable = () => {
+  const { inventoryData, lastUpdateTime } = useLiveSimulation();
+
   return (
     <div className="animate-fade-up stagger-5">
       <GlassCard className="p-0 overflow-hidden">
         <div className="px-6 py-4 border-b border-glass-border/10">
-          <h2 className="text-lg font-semibold tracking-tight">Inventory Ledger</h2>
-          <p className="text-sm text-muted-foreground">Real-time stock movements and closing balances</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">Inventory Ledger</h2>
+              <p className="text-sm text-muted-foreground">Real-time stock movements and closing balances</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="w-2 h-2 rounded-full bg-emerald animate-pulse" />
+              <span>Last sync: {lastUpdateTime.toLocaleTimeString()}</span>
+            </div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -127,11 +68,11 @@ export const InventoryTable = () => {
                     <td className="px-6 py-4 text-right tabular-nums text-emerald">
                       +{item.received.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-right tabular-nums text-crimson">
+                    <td className="px-6 py-4 text-right tabular-nums text-crimson transition-all duration-300">
                       -{item.issued.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className={`px-2 py-1 rounded-md font-bold tabular-nums ${status.bg} ${status.color}`}>
+                      <span className={`px-2 py-1 rounded-md font-bold tabular-nums transition-all duration-300 ${status.bg} ${status.color}`}>
                         {item.closing.toLocaleString()}
                       </span>
                     </td>

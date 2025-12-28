@@ -1,23 +1,6 @@
 import { useState } from "react";
 import { GlassCard } from "./GlassCard";
-
-interface Location {
-  id: string;
-  name: string;
-  status: "healthy" | "low" | "critical";
-  itemsAtRisk: number;
-  x: number;
-  y: number;
-}
-
-const locations: Location[] = [
-  { id: "1", name: "Central Regional Hospital", status: "critical", itemsAtRisk: 3, x: 45, y: 35 },
-  { id: "2", name: "St. Jude's Relief Center", status: "low", itemsAtRisk: 2, x: 25, y: 55 },
-  { id: "3", name: "Metro General Hospital", status: "healthy", itemsAtRisk: 0, x: 65, y: 45 },
-  { id: "4", name: "North-West NGO Hub", status: "low", itemsAtRisk: 1, x: 35, y: 25 },
-  { id: "5", name: "East Zone Medical Center", status: "critical", itemsAtRisk: 4, x: 75, y: 30 },
-  { id: "6", name: "Southern District Clinic", status: "healthy", itemsAtRisk: 0, x: 55, y: 70 },
-];
+import { useLiveSimulation, MapLocation } from "@/hooks/useLiveSimulation";
 
 const statusColors = {
   healthy: { ring: "bg-emerald", glow: "shadow-[0_0_20px_hsl(160_84%_39%/0.6)]" },
@@ -26,10 +9,11 @@ const statusColors = {
 };
 
 export const HeatMap = () => {
-  const [hoveredLocation, setHoveredLocation] = useState<Location | null>(null);
+  const { locations } = useLiveSimulation();
+  const [hoveredLocation, setHoveredLocation] = useState<MapLocation | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseEnter = (location: Location, e: React.MouseEvent) => {
+  const handleMouseEnter = (location: MapLocation, e: React.MouseEvent) => {
     setHoveredLocation(location);
     setTooltipPosition({ x: e.clientX, y: e.clientY });
   };
@@ -85,7 +69,7 @@ export const HeatMap = () => {
               </linearGradient>
             </defs>
             {locations.map((loc, i) => 
-              locations.slice(i + 1).map((loc2, j) => (
+              locations.slice(i + 1).map((loc2) => (
                 <line
                   key={`${loc.id}-${loc2.id}`}
                   x1={`${loc.x}%`}
@@ -96,35 +80,55 @@ export const HeatMap = () => {
                   strokeWidth="1"
                   strokeDasharray="4 4"
                   className="animate-pulse"
-                  style={{ animationDelay: `${(i + j) * 0.2}s` }}
+                  style={{ animationDelay: `${(i) * 0.2}s` }}
                 />
               ))
             )}
           </svg>
 
           {/* Location Markers */}
-          {locations.map((location, index) => (
-            <div
-              key={location.id}
-              className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 z-10"
-              style={{ left: `${location.x}%`, top: `${location.y}%` }}
-              onMouseEnter={(e) => handleMouseEnter(location, e)}
-              onMouseLeave={() => setHoveredLocation(null)}
-            >
-              {/* Pulse Rings */}
-              <div className={`absolute inset-0 w-8 h-8 -m-2 rounded-full ${statusColors[location.status].ring} opacity-20 animate-[ripple_2s_ease-out_infinite]`} style={{ animationDelay: '0s' }} />
-              <div className={`absolute inset-0 w-8 h-8 -m-2 rounded-full ${statusColors[location.status].ring} opacity-20 animate-[ripple_2s_ease-out_infinite]`} style={{ animationDelay: '0.5s' }} />
-              <div className={`absolute inset-0 w-8 h-8 -m-2 rounded-full ${statusColors[location.status].ring} opacity-20 animate-[ripple_2s_ease-out_infinite]`} style={{ animationDelay: '1s' }} />
-              
-              {/* Center Point */}
-              <div 
-                className={`relative w-4 h-4 rounded-full ${statusColors[location.status].ring} ${statusColors[location.status].glow} transition-transform duration-200 hover:scale-150`}
+          {locations.map((location) => {
+            const effectiveStatus = location.isHighUsageEvent ? "critical" : location.status;
+            return (
+              <div
+                key={location.id}
+                className="absolute cursor-pointer transform -translate-x-1/2 -translate-y-1/2 z-10"
+                style={{ left: `${location.x}%`, top: `${location.y}%` }}
+                onMouseEnter={(e) => handleMouseEnter(location, e)}
+                onMouseLeave={() => setHoveredLocation(null)}
               >
-                <div className={`absolute inset-1 rounded-full bg-background`} />
-                <div className={`absolute inset-1.5 rounded-full ${statusColors[location.status].ring}`} />
+                {/* High Usage Event Alert Ring */}
+                {location.isHighUsageEvent && (
+                  <>
+                    <div className="absolute inset-0 w-16 h-16 -m-6 rounded-full bg-crimson opacity-30 animate-ping" />
+                    <div className="absolute inset-0 w-12 h-12 -m-4 rounded-full border-2 border-crimson opacity-60 animate-pulse" />
+                  </>
+                )}
+
+                {/* Pulse Rings */}
+                <div className={`absolute inset-0 w-8 h-8 -m-2 rounded-full ${statusColors[effectiveStatus].ring} opacity-20 animate-[ripple_2s_ease-out_infinite]`} style={{ animationDelay: '0s' }} />
+                <div className={`absolute inset-0 w-8 h-8 -m-2 rounded-full ${statusColors[effectiveStatus].ring} opacity-20 animate-[ripple_2s_ease-out_infinite]`} style={{ animationDelay: '0.5s' }} />
+                <div className={`absolute inset-0 w-8 h-8 -m-2 rounded-full ${statusColors[effectiveStatus].ring} opacity-20 animate-[ripple_2s_ease-out_infinite]`} style={{ animationDelay: '1s' }} />
+                
+                {/* Center Point */}
+                <div 
+                  className={`relative w-4 h-4 rounded-full ${statusColors[effectiveStatus].ring} ${statusColors[effectiveStatus].glow} transition-all duration-300 hover:scale-150`}
+                >
+                  <div className={`absolute inset-1 rounded-full bg-background`} />
+                  <div className={`absolute inset-1.5 rounded-full ${statusColors[effectiveStatus].ring}`} />
+                </div>
+
+                {/* High Usage Event Label */}
+                {location.isHighUsageEvent && (
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-crimson uppercase tracking-wider bg-crimson/20 px-2 py-0.5 rounded animate-pulse">
+                      High Usage Event
+                    </span>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Tooltip */}
           {hoveredLocation && (
@@ -139,12 +143,12 @@ export const HeatMap = () => {
               <GlassCard className="p-4 min-w-[240px]">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${statusColors[hoveredLocation.status].ring}`} />
+                    <span className={`w-2 h-2 rounded-full ${statusColors[hoveredLocation.isHighUsageEvent ? 'critical' : hoveredLocation.status].ring}`} />
                     <span className={`text-xs font-medium uppercase tracking-wider ${
-                      hoveredLocation.status === 'critical' ? 'text-crimson' :
+                      hoveredLocation.isHighUsageEvent || hoveredLocation.status === 'critical' ? 'text-crimson' :
                       hoveredLocation.status === 'low' ? 'text-amber' : 'text-emerald'
                     }`}>
-                      {hoveredLocation.status}
+                      {hoveredLocation.isHighUsageEvent ? 'HIGH USAGE EVENT' : hoveredLocation.status}
                     </span>
                   </div>
                   <div>
