@@ -1,7 +1,15 @@
 import { cn } from "@/lib/utils";
-import { Activity, LayoutDashboard, Settings, HelpCircle } from "lucide-react";
+import { Activity, LayoutDashboard, Settings, HelpCircle, BarChart3 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Header = () => {
+  const handleNavClick = (label: string) => {
+    if (label === "Dashboard") return;
+    toast.info(`${label} module coming soon`, {
+      description: `The ${label} panel is currently under development.`,
+    });
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 animate-fade-up">
       <div className="bg-background/80 backdrop-blur-xl border-b border-glass-border/10">
@@ -19,10 +27,10 @@ export const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <NavItem icon={LayoutDashboard} label="Dashboard" active />
-            <NavItem icon={Activity} label="Analytics" />
-            <NavItem icon={Settings} label="Settings" />
-            <NavItem icon={HelpCircle} label="Support" />
+            <NavItem icon={LayoutDashboard} label="Dashboard" active onClick={() => handleNavClick("Dashboard")} />
+            <NavItem icon={BarChart3} label="Analytics" onClick={() => handleNavClick("Analytics")} />
+            <NavItem icon={Settings} label="Settings" onClick={() => handleNavClick("Settings")} />
+            <NavItem icon={HelpCircle} label="Support" onClick={() => handleNavClick("Support")} />
           </nav>
 
           {/* Status */}
@@ -45,10 +53,12 @@ interface NavItemProps {
   icon: React.ElementType;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem = ({ icon: Icon, label, active }: NavItemProps) => (
+const NavItem = ({ icon: Icon, label, active, onClick }: NavItemProps) => (
   <button
+    onClick={onClick}
     className={cn(
       "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
       active 

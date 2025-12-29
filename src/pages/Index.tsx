@@ -34,10 +34,10 @@ const DashboardContent = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <KPICard title="Locations Monitored" value={247} icon="locations" status="healthy" delay={0.05} />
-          <KPICard title="Critical Items at Risk" value={12} icon="critical" status="critical" delay={0.1} />
-          <KPICard title="Avg Days to Stock-Out" value={4.2} suffix="days" icon="days" status="warning" delay={0.15} />
-          <KPICard title="Snowflake Sync Status" value={100} suffix="%" icon="sync" status="healthy" delay={0.2} />
+          <KPICard title="Locations Monitored" baseValue={247} icon="locations" status="healthy" delay={0.05} fluctuate />
+          <KPICard title="Critical Items at Risk" baseValue={12} icon="critical" status="critical" delay={0.1} fluctuate />
+          <KPICard title="Avg Days to Stock-Out" baseValue={4.2} suffix="days" icon="days" status="warning" delay={0.15} fluctuate />
+          <KPICard title="Snowflake Sync Status" baseValue={100} suffix="%" icon="sync" status="healthy" delay={0.2} />
         </div>
 
         {/* Main Content Grid */}
