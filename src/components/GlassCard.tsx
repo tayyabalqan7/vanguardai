@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 interface GlassCardProps {
@@ -6,13 +6,15 @@ interface GlassCardProps {
   className?: string;
   hoverable?: boolean;
   glowColor?: "emerald" | "amber" | "crimson" | "none";
+  style?: CSSProperties;
 }
 
 export const GlassCard = ({ 
   children, 
   className, 
   hoverable = false,
-  glowColor = "none" 
+  glowColor = "none",
+  style
 }: GlassCardProps) => {
   const glowClasses = {
     emerald: "glow-emerald",
@@ -30,6 +32,7 @@ export const GlassCard = ({
         glowClasses[glowColor],
         className
       )}
+      style={style}
     >
       {children}
     </div>
